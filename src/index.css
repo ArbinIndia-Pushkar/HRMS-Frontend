@@ -1,0 +1,17 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+    font-family: Bungee;
+    src: url(../src/assets/fonts/BungeeInline-Regular.ttf);
+  }
+
+@font-face {
+    font-family: RobotoMono;
+    src: url(../src/assets/fonts/RobotoMono-VariableFont_wght.ttf);
+}
+
+body{
+  background-color: #f5f2ed;
+}
