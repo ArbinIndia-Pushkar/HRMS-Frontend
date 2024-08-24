@@ -8,15 +8,14 @@ import Box from "@mui/material/Box";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
-import Select, { SelectChangeEvent } from "@mui/material/Select";
-import { useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Select from "@mui/material/Select";
 
 export default function EmpDashboard() {
   const username = sessionStorage.getItem("username");
   const leaves = () => {
-    toast.dark("Sent for approval", {
+    toast.dark(`Sent for approval`, {
       position: "top-center",
       autoClose: 500,
     });
@@ -40,7 +39,7 @@ export default function EmpDashboard() {
         </p>
       </div>
 
-      {/* Body div 1 */}
+      {/* Body div 1 */}  
       <div className=" flex justify-between m-5 mt-10">
         {/* Left panel */}
 
@@ -70,7 +69,7 @@ export default function EmpDashboard() {
             {/* Number of Emp */}
             <div className=" text-HRMSBlack font-RobotoMono">
               <p className=" text-xl">Total Employees</p>
-              <p className=" text-8xl">20</p>
+              <p className=" text-8xl">21</p>
             </div>
 
             {/* chart */}
