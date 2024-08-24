@@ -9,18 +9,16 @@ import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Calendar from "react-calendar";
+import DatePicker from "react-datepicker";
+import CalendarWithMultiDateSelector from "./DatePicker";
+import Modal from "./Modal";
 
 export default function EmpDashboard() {
   const username = sessionStorage.getItem("username");
-  const leaves = () => {
-    toast.dark("Sent for approval", {
-      position: "top-center",
-      autoClose: 500,
-    });
-  };
 
   const attendance = () => {
     toast.dark("Attendance marked", {
@@ -28,6 +26,43 @@ export default function EmpDashboard() {
       autoClose: 500,
     });
   };
+
+  const [selectedDates, setSelectedDates] = useState<Date[]>([]);
+  const [leaveNature, setLeaveNature] = useState<string>("");
+  const [details, setDetails] = useState("");
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => setIsModalOpen(false);
+
+  const handleDateChange = (dates: Date[]) => {
+    setSelectedDates(dates);
+  };
+
+  const calculateDays = () => {
+    // Using a Set to get unique dates
+    const uniqueDates = new Set(
+      selectedDates.map((date) => date.toDateString())
+    );
+    return uniqueDates.size;
+  };
+
+  const leaveRequest = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const response = await fetch("/api/leave-request", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ details }),
+    });
+
+    if (response.ok) {
+      alert("Leave request submitted successfully!");
+      setDetails("");
+    } else {
+      alert("Failed to submit leave request.");
+    }
+  };
+
   return (
     <div className="">
       {/* Header - Containd company name and Profile name for now */}
@@ -96,44 +131,18 @@ export default function EmpDashboard() {
 
           {/* Mark Attendance and Leave Application buttons */}
 
-          <p className=" mt-14 mb-4 text-4xl">Appy for Leaves</p>
-          <div className="flex">
-            <Box sx={{ minWidth: 120 }}>
-              <FormControl fullWidth>
-                <InputLabel id="demo-simple-select-label">Nature</InputLabel>
-                <Select
-                  labelId="demo-simple-select-label"
-                  id="demo-simple-select"
-                  // value={age}
-                  label="Nature Of Leaves"
-                  // onChange={handleChange}
-                >
-                  <MenuItem value={10}>Personal Leave</MenuItem>
-                  <MenuItem value={20}>Sick Leave</MenuItem>
-                  <MenuItem value={30}>Half Day</MenuItem>
-                </Select>
-              </FormControl>
-            </Box>
-          </div>
-          <div className="flex-1">
-            <LocalizationProvider dateAdapter={AdapterDayjs}>
-              <DemoContainer components={["DesktopDatePicker"]}>
-                <DemoItem label="From Date">
-                  <DesktopDatePicker defaultValue={dayjs("2022-04-17")} />
-                </DemoItem>
-                <DemoItem label="To Date">
-                  <DesktopDatePicker defaultValue={dayjs("2022-04-17")} />
-                </DemoItem>
-              </DemoContainer>
-            </LocalizationProvider>
-          </div>
           <button
-            type="submit"
-            className=" bg-HRMSBlack text-HRMSBeige text-xl p-3 rounded-md hover:bg-HRMSRed hover:text-HRMSBeige mt-4"
-            onClick={leaves}
+            className="flex  bg-HRMSBlack text-HRMSBeige text-xl p-3 rounded-md hover:bg-HRMSRed hover:text-HRMSBeige  mt-14 mb-4"
+            onClick={openModal}
           >
-            APPLY
+            Apply for Leaves
           </button>
+          <Modal
+            isOpen={isModalOpen}
+            onClose={closeModal}
+            onSubmit={leaveRequest}
+          ></Modal>
+
           <ToastContainer />
         </div>
       </div>
