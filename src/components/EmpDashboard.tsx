@@ -1,5 +1,5 @@
 import { PieChart } from "@mui/x-charts/PieChart";
-import dayjs from "dayjs";
+import dayjs, { Dayjs } from "dayjs";
 import { DemoContainer, DemoItem } from "@mui/x-date-pickers/internals/demo";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
@@ -16,6 +16,7 @@ import Calendar from "react-calendar";
 import DatePicker from "react-datepicker";
 import CalendarWithMultiDateSelector from "./DatePicker";
 import Modal from "./Modal";
+import CalendarComponent from "./calendarattendance";
 
 export default function EmpDashboard() {
   const username = sessionStorage.getItem("username");
@@ -33,16 +34,28 @@ export default function EmpDashboard() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
+  const [markedDates, setMarkedDates] = useState<Dayjs[]>([]);
 
-  const handleDateChange = (dates: Date[]) => {
-    setSelectedDates(dates);
+  const handleDateChange = (dates: Dayjs | null) => {
+    if (dates) {
+      setSelectedDates([...selectedDates, dates.toDate()]);
+    }
+  };
+
+  const markAttendance = () => {
+    if (selectedDates.length > 0) {
+      // Avoid duplicating marked dates
+      const newMarkedDates = selectedDates.filter(selectedDate => 
+        !markedDates.some(date => date.isSame(dayjs(selectedDate), 'day'))
+      );
+
+      setMarkedDates([...markedDates, ...newMarkedDates.map(date => dayjs(date))]);
+      setSelectedDates([]); // Reset selected dates after marking attendance
+    }
   };
 
   const calculateDays = () => {
-    // Using a Set to get unique dates
-    const uniqueDates = new Set(
-      selectedDates.map((date) => date.toDateString())
-    );
+    const uniqueDates = new Set(selectedDates.map(date => date.toDateString()));
     return uniqueDates.size;
   };
 
@@ -52,7 +65,7 @@ export default function EmpDashboard() {
     const response = await fetch("/api/leave-request", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ details }),
+      body: JSON.stringify({ details, selectedDates }),
     });
 
     if (response.ok) {
@@ -95,6 +108,8 @@ export default function EmpDashboard() {
           >
             Mark Attendance
           </button>
+          {/* <Calendar markedDates={markedDates} /> */}
+          <CalendarComponent />
           <ToastContainer />
         </div>
 
