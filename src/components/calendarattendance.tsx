@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   format,
   startOfMonth,
@@ -11,6 +11,7 @@ import {
   isSaturday,
   isSunday,
 } from "date-fns";
+import axios from "axios";
 
 type CalendarDate = Date;
 
@@ -18,13 +19,13 @@ type CalendarDate = Date;
 const holidays: Date[] = [
   new Date(2024, 7, 15), // Example: August 15, 2024
   new Date(2024, 11, 25), // Example: December 25, 2024
-  new Date(2024, 8, 7),
-  new Date(2024, 8, 17),
-  new Date(2024, 9, 2),
-  new Date(2024, 9, 17),
+  new Date(2024, 8, 7), // Example: September 7, 2024
+  new Date(2024, 8, 17), // Example: September 17, 2024
+  new Date(2024, 9, 2), // Example: October 2, 2024
+  new Date(2024, 9, 17), // Example: October 17, 2024
 ];
 
-const CalendarComponent: React.FC = () => {
+const CalendarComponent: React.FC<{ employeeId: string }> = ({ employeeId }) => {
   const [selectedDate, setSelectedDate] = useState<CalendarDate | null>(null);
   const [markedDates, setMarkedDates] = useState<CalendarDate[]>([]);
   const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
@@ -52,6 +53,25 @@ const CalendarComponent: React.FC = () => {
       direction === "prev" ? subMonths(prevMonth, 1) : addMonths(prevMonth, 1)
     );
   };
+
+  const API_URL = `https://localhost:7289/api/Attendance/${employeeId}/attendance`;
+
+  const getAttendance = async () => {
+    try {
+      const response = await axios.get(API_URL);
+      const attendanceData = response.data;
+      const attendanceDates = Object.keys(attendanceData)
+        .filter((date) => attendanceData[date])
+        .map((date) => new Date(date));
+      setMarkedDates(attendanceDates);
+    } catch (error) {
+      console.error("Failed to fetch attendance:", error);
+    }
+  };
+
+  useEffect(() => {
+    getAttendance();
+  }, [employeeId]);
 
   return (
     <div className="p-6 max-w-lg mx-auto bg-white shadow-md rounded-lg">

@@ -17,6 +17,7 @@ import DatePicker from "react-datepicker";
 import CalendarWithMultiDateSelector from "./DatePicker";
 import Modal from "./Modal";
 import CalendarComponent from "./calendarattendance";
+import axios from "axios";
 
 export default function EmpDashboard() {
   const username = sessionStorage.getItem("username");
@@ -35,6 +36,16 @@ export default function EmpDashboard() {
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => setIsModalOpen(false);
   const [markedDates, setMarkedDates] = useState<Dayjs[]>([]);
+  const [employee, setEmployee] = useState({
+    Username: "",
+    Email: "",
+    JoiningDate: "",
+    halfDays: "",
+    Phone: "",
+    personalLeaves: "",
+    sickLeaves: "",
+    compOffs: "",
+  });
 
   const handleDateChange = (dates: Dayjs | null) => {
     if (dates) {
@@ -45,17 +56,23 @@ export default function EmpDashboard() {
   const markAttendance = () => {
     if (selectedDates.length > 0) {
       // Avoid duplicating marked dates
-      const newMarkedDates = selectedDates.filter(selectedDate => 
-        !markedDates.some(date => date.isSame(dayjs(selectedDate), 'day'))
+      const newMarkedDates = selectedDates.filter(
+        (selectedDate) =>
+          !markedDates.some((date) => date.isSame(dayjs(selectedDate), "day"))
       );
 
-      setMarkedDates([...markedDates, ...newMarkedDates.map(date => dayjs(date))]);
+      setMarkedDates([
+        ...markedDates,
+        ...newMarkedDates.map((date) => dayjs(date)),
+      ]);
       setSelectedDates([]); // Reset selected dates after marking attendance
     }
   };
 
   const calculateDays = () => {
-    const uniqueDates = new Set(selectedDates.map(date => date.toDateString()));
+    const uniqueDates = new Set(
+      selectedDates.map((date) => date.toDateString())
+    );
     return uniqueDates.size;
   };
 
@@ -76,6 +93,14 @@ export default function EmpDashboard() {
     }
   };
 
+  const employeeDetails = axios
+    .get("https://localhost:7289/api/Attendance/0/getempolyeesbyid")
+    .then((res) => {
+      if (res.status === 200) {
+        setEmployee(res.data);
+      }
+    })
+    .catch((err) => console.error(err));
   return (
     <div className="">
       {/* Header - Containd company name and Profile name for now */}
@@ -109,8 +134,16 @@ export default function EmpDashboard() {
             Mark Attendance
           </button>
           {/* <Calendar markedDates={markedDates} /> */}
-          <CalendarComponent />
+          <CalendarComponent employeeId={"0"} />
+
           <ToastContainer />
+          <div>
+            {Object.entries(employee).map(([key, value], index) => (
+              <p key={index}>
+                <strong>{key.toUpperCase()}:</strong> {value}
+              </p>
+            ))}
+          </div>
         </div>
 
         {/* Right panel */}
